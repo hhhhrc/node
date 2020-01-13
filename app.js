@@ -1,42 +1,40 @@
-const http = require('http')
 const queryString = require('querystring')
+const handleBlogRouter = require('./src/router/blog');
+const handleUserRouter = require('./src/router/user');
 
-const server = http.createServer((req, res) => {
-    const method = req.method;
-    const url = req.url
+const serverHandle = (req, res) => {
+    // 设置返回格式
+    res.setHeader('Content-Type', 'application/json')
+
+    //获取path
+    const url = req.url;
     const path = url.split('?')[0]
-    const query = queryString.parse(url.split('?')[1])
-    // 设置返回格式为json
-    res.setHeader('Content-type', 'application/json')
 
-    // 返回的数据
-    const resData = {
-        method,
-        url,
-        path,
-        query
-    }
+    //解析query
+    req.query = queryString.parse(url.split('?')[1])
 
-    // 返回
-    if (method === 'GET') {
+    //处理blog
+    const blogData = handleBlogRouter(req, res)
+    if (blogData) {
         res.end(
-            JSON.stringify(resData)
+            JSON.stringify(blogData)
         )
+        return
     }
 
-    if (method === 'POST') {
-        let postData = ''
-        req.on('data', chunk => {
-            postData += chunk.toString();
-        })
-        req.on('end', () => {
-            resData.postData = postData
-            res.end(
-                JSON.stringify(resData)
-            )
-        })
+    //处理user
+    const userData = handleUserRouter(req, res)
+    if (userData) {
+        res.end(
+            JSON.stringify(userData)
+        )
+        return
     }
-})
 
-server.listen(8000)
-console.log('ok')
+    // 未命中，404,纯文本
+    res.writeHead(404, { 'content-type': 'text/plain' });
+    res.write('404 not found');
+    res.end()
+}
+
+module.exports = serverHandle
