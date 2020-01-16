@@ -14,13 +14,14 @@ const getPostData = (req) => {
         }
         let postData = ''
         req.on('data', chunk => {
-            postData += chunk.toString
+            postData += chunk.toString()
         })
         req.on('end', () => {
             if (!postData) {
                 resolve({})
                 return
             }
+            // console.log(postData);
             resolve(
                 JSON.parse(postData)
             )
@@ -42,7 +43,6 @@ const serverHandle = (req, res) => {
 
     getPostData(req).then(postData => {
         req.body = postData
-
         //处理blog
         const blogResult = handleBlogRouter(req, res)
         if (blogResult) {

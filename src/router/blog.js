@@ -1,4 +1,10 @@
-const { getList, getDetail } = require('../controller/blog')
+const {
+    getList,
+    getDetail,
+    newBlog,
+    updateBlog,
+    delBlog
+} = require('../controller/blog')
 const { SuccessModel, ErrorModel } = require('../model/resModel')
 
 const handleBlogRouter = (req, res) => {
@@ -30,9 +36,11 @@ const handleBlogRouter = (req, res) => {
 
     //新建博客
     if (method === 'POST' && path === '/api/blog/new') {
-        return {
-            msg: '新建博客接口'
-        }
+        req.body.author = 'zhangsan'  // 假数据
+        const result = newBlog(req.body)
+        return result.then(data => {
+            return new SuccessModel(data)
+        })
     }
 
     //更新博客
