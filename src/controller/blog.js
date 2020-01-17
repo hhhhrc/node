@@ -1,7 +1,7 @@
 const { exec } = require('../db/mysql')
 
 const getList = (author, keyword) => {
-    const sql = `select * from blogs where 1=1 ` //占位，防止后面没有值
+    let sql = `select * from blogs where 1=1 ` //占位，防止后面没有值
     if (author) {
         sql += `and author='${author}' `
     }

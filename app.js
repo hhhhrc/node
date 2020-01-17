@@ -41,6 +41,21 @@ const serverHandle = (req, res) => {
     //解析query
     req.query = queryString.parse(url.split('?')[1])
 
+    // 解析cookie
+    req.cookie = {}
+    const cookieStr = req.headers.cookie || ''  // k2=v1;k2=v2..
+    cookieStr.split(';').forEach(item => {
+        if (!item) {
+            return
+        } else {
+            const arr = item.split('=')
+            const key = arr[0]
+            const val = arr[1]
+            req.cookie[key] = val
+        }
+    })
+    console.log('req.cookie is :', req.cookie)
+
     getPostData(req).then(postData => {
         req.body = postData
         //处理blog
