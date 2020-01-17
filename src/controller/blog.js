@@ -31,7 +31,7 @@ const newBlog = (blogData = {}) => {
                 values ('${title}','${content}',${createtime},'${author}')`
     return exec(sql).then(insertData => {
         return {
-            id:insertData.insertId
+            id: insertData.insertId
         }
     })
 }
@@ -40,15 +40,27 @@ const updateBlog = (id, blogData = {}) => {
     // blogData是一个博客对象，包含title content author属性
     const title = blogData.title;
     const content = blogData.content;
-    const sql = `update blogs set title='${title},content=${title}' where id = ${id}`;
-    // return exec(sql).then(upDateData => {
-    //     return {
-    //         id: upDateData.insertId
-    //     }
-    // })
+    const sql = `update blogs set title='${title}',content='${content}' where id = ${id}`;
+    return exec(sql).then(upDateData => {
+        // console.log('uodate data is :', upDateData)
+        if (upDateData.affectedRows > 0) {
+            return true
+        } else {
+            return false
+        }
+    })
 }
 
-const delBlog = (id) => {
+const delBlog = (id, author) => {
+    const sql = `delete from blogs where id='${id}' and author='${author}'`
+    return exec(sql).then(delData => {
+        // console.log('uodate data is :', upDateData)
+        if (delData.affectedRows > 0) {
+            return true
+        } else {
+            return false
+        }
+    })
 }
 
 module.exports = {

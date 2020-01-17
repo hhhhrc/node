@@ -18,19 +18,19 @@ class SuccessModel extends BaseModel {
     constructor(data, message) {
         // 执行父类构造函数
         super(data, message)
-        this.errno = 0
+        this.err = 0
     }
 }
 
-class ErrorModal extends BaseModel {
+class ErrorModel extends BaseModel {
     constructor(data, message) {
         // 执行父类构造函数
         super(data, message)
-        this.errno = -1
+        this.err = -1
     }
 }
 
 module.exports = {
     SuccessModel,
-    ErrorModal
+    ErrorModel
 }

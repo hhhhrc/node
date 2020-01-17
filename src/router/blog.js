@@ -45,16 +45,27 @@ const handleBlogRouter = (req, res) => {
 
     //更新博客
     if (method === 'POST' && path === '/api/blog/update') {
-        return {
-            msg: '更新博客接口'
-        }
+        const result = updateBlog(id, req.body)
+        return result.then(val => {
+            if (val) {
+                return new SuccessModel()
+            } else {
+                return new ErrorModel('更新博客失败')
+            }
+        })
     }
 
     //删除博客
     if (method === 'POST' && path === '/api/blog/del') {
-        return {
-            msg: '删除博客接口'
-        }
+        const author = 'zhangsan'  // 假数据
+        const result = delBlog(id, author)
+        return result.then(val => {
+            if (val) {
+                return new SuccessModel()
+            } else {
+                return new ErrorModel('删除博客失败')
+            }
+        })
     }
 }
 
