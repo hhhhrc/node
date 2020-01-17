@@ -14,7 +14,7 @@ const handleUserRouter = (req, res) => {
         return result.then(data => {
             if (data.username) {
                 // 操作cookie,path=/是对所有路由都生效
-                res.setHeader('Set-Cookie', `username=${data.username};path=/`)
+                res.setHeader('Set-Cookie', `username=${data.username};path=/; httpOnly`)
 
                 return new SuccessModel()
             } else {
