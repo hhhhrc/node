@@ -2,8 +2,10 @@ const queryString = require('querystring')
 const handleBlogRouter = require('./src/router/blog');
 const handleUserRouter = require('./src/router/user');
 
+const { get, set } = require('./src/db/redis')
+
 //session数据
-const SESSISON_DATA = {}
+// const SESSISON_DATA = {}
 
 // 获取cookie过期时间
 const getCookieExpires = () => {
@@ -43,7 +45,6 @@ const getPostData = (req) => {
 }
 
 const serverHandle = (req, res) => {
-    console.log('刚进来的时候', SESSISON_DATA);
     // 设置返回格式
     res.setHeader('Content-type', 'application/json')
 
@@ -69,24 +70,61 @@ const serverHandle = (req, res) => {
     })
 
     //解析session
+    // let needSetCookie = false
+    // let userId = req.cookie.userid
+    // if (userId) {
+    //     get(userId).then(val => {
+    //         if (!val) {
+    //             set(userId, {})
+    //         } else {
+    //             req.session = val;
+    //         }
+    //     })
+    //     // if (!SESSISON_DATA[userId]) {
+    //     //     SESSISON_DATA[userId] = {}
+    //     // }
+    // } else {
+    //     // cokkie中没有userid，需要set进去一个
+    //     needSetCookie = true
+    //     userId = `${Date.now()}_${Math.random()}`   //随机数
+    //     // 给SESSISON_DATA这一项设为{}
+    //     // SESSISON_DATA[userId] = {}
+    //     set(userId, {});
+    // }
+    // // 如果没登录，req.session = {},如果登录了，这里就把这个userId的值赋给req.session，并以此作为是否登录标志位
+    // get(userId).then(val => {
+    //     req.session = val
+    // })
+    // req.session = SESSISON_DATA[userId]
+
     let needSetCookie = false
+    // 获取 cookie
     let userId = req.cookie.userid
-    if (userId) {
-        if (!SESSISON_DATA[userId]) {
-            SESSISON_DATA[userId] = {}
-        }
-    } else {
-        // cokkie中没有userid，需要set进去一个
+    // 判断 cookie 中是否存在 userid
+    if (!userId) {
+        // 需要设置 cookie，方便 res.setHeader('Set-Cookie', ...)
         needSetCookie = true
-        userId = `${Date.now()}_${Math.random()}`   //随机数
-        // 给SESSISON_DATA这一项设为{}
-        SESSISON_DATA[userId] = {}
+        // 初始化 redis 中 key
+        userId = `${Date.now()}_${Math.random()}`
+        // 初始化 value， 即 redis 中的 session 值
+        set(userId, {})
     }
-    // 如果没登录，req.session = {},如果登录了，这里就把这个userId的值赋给req.session，并以此作为是否登录标志位
-    req.session = SESSISON_DATA[userId]
-
-
-    getPostData(req).then(postData => {
+    req.sessionId = userId
+    // 获取 redis 中 sessionId 的 session 值
+    get(req.sessionId).then(sessionData => {
+        console.log('sessionData?:', sessionData)
+        if (sessionData == null) {
+            // 初始化 redis 中的 session 值
+            set(req.sessionId, {})
+            // 初始化 session 值
+            req.session = {}
+        } else {
+            // 设置 session 值
+            req.session = sessionData
+        }
+        // post data
+        return getPostData(req)
+    }).then(postData => {
         req.body = postData
         //处理blog
         const blogResult = handleBlogRouter(req, res)

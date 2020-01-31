@@ -1,5 +1,6 @@
 const { login } = require('../controller/user')
 const { SuccessModel, ErrorModel } = require('../model/resModel')
+const { set } = require('./../db/redis')
 
 
 const handleUserRouter = (req, res) => {
@@ -8,6 +9,22 @@ const handleUserRouter = (req, res) => {
     const path = url.split('?')[0]
 
     // 登录
+
+    // 登录 POST
+    if (method === 'POST' && req.path === '/api/user/login') {
+        const { username, password } = req.body
+        const result = login(username, password)
+        return result.then(data => {
+            if (data.username) {
+                req.session.username = data.username
+                // update redis
+                set(req.sessionId, req.session)
+                return new SuccessModel()
+            }
+            return new ErrorModel('登录失败')
+        })
+    }
+
     if (method === 'GET' && path === '/api/user/login') {
         // const { username, password } = req.body
         const { username, password } = req.query
@@ -16,12 +33,10 @@ const handleUserRouter = (req, res) => {
             if (data.username) {
                 // 操作cookie,path=/是对所有路由都生效
                 // res.setHeader('Set-Cookie', `username=${data.username};path=/; httpOnly; expires=${getCookieExpires()}`)
-                console.log('赋值之前：',req.session)
                 //设置session
                 req.session.username = data.username
-                req.session.realname = data.realname
-
-                console.log('req.session is:', req.session)
+                // update redis
+                set(req.sessionId, req.session)
 
                 return new SuccessModel()
             } else {
@@ -32,7 +47,8 @@ const handleUserRouter = (req, res) => {
 
     // 登录验证的测试
     if (method === 'GET' && path === '/api/user/login-test') {
-        if (req.session.username) {
+        console.log(req.session)
+        if (req.session && req.session.username) {
             return Promise.resolve(new SuccessModel({
                 session: req.session
             }));
